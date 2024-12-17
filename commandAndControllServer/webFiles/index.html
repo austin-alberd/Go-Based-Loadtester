@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    <title>Command and Control Server</title>
+</head>
+<body>
+    <header>
+        <center><h1>Go-Load Tester</h1></center>
+    </header>
+    <main>
+        <div id="test-start-panel">
+            <center><h3>Lets Get Testing!</h3></center>
+            <form 
+                name = "test_info"
+                hx-post = "/"
+                hx-target = "#test-results-panel"
+                hx-swap = "innerHtml"
+            >
+                <label for="target">Target <input type="text" name="target" id="target"></label> <br>
+
+                <label for="method">Method 
+                    <select name="method" id="method">
+                        <option value="default">---Select an Option---</option>
+                        <option value="get">GET Request</option>
+                        <option value="post">POST Request</option>
+                        <option value="icmp">ICMP Request</option>
+                    </select>
+                </label> <br>
+                <center><button type="submit">Launch the Test</button></center>
+            </form>
+        </div>
+
+        <div id="test-results-panel">
+            <center><h3>Test Results</h3></center>
+            <div id="#inner-results">
+
+            </div>
+        </div>
+    </main>
+</body>
+</html>

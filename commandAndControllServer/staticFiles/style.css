@@ -1,0 +1,35 @@
+:root{
+    --background-color: #333738;
+    --text-color:#FAF8F6;
+    --accent-color-one: #b18742;
+    --accent-color-two: #635b6c;
+    --accent-color-three: #b4b5be;
+}
+
+body{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    background-color: var(--background-color);
+    color:var(--text-color);
+}
+
+main{
+    display:flex;
+    justify-content: space-evenly;
+}  
+
+#test-start-panel{
+    border: 1px solid white;
+    width: 49%;
+    margin: 1%;
+}
+
+#test-results-panel{
+    border: 1px solid white;
+    width:49%;
+    margin: 1%;
+}
+
+
+form{
+    margin: 1rem;
+}
