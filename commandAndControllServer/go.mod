@@ -2,7 +2,10 @@ module main
 
 go 1.22.5
 
-require github.com/charmbracelet/lipgloss v1.0.0
+require (
+	github.com/charmbracelet/lipgloss v1.0.0
+	github.com/joho/godotenv v1.5.1
+)
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect

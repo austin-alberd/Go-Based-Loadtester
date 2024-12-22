@@ -8,5 +8,7 @@ The command and controll server will have a list of targets, request that need t
 
 ![Image of the system diagram.](systemDiagram.png)
 
+## How to use
+
 ## <em>Disclaimer</em>
 This system is intended to be a load testing system for web based services. Do not run on any hardware that is not yours or that you do not have the consent to opperate on.
