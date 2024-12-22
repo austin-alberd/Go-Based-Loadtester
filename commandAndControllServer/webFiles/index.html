@@ -14,22 +14,27 @@
     <main>
         <div id="test-start-panel">
             <center><h3>Lets Get Testing!</h3></center>
-            <form 
-                name = "test_info"
-                hx-post = "/"
-                hx-target = "#test-results-panel"
-                hx-swap = "innerHtml"
-            >
-                <label for="target">Target <input type="text" name="target" id="target"></label> <br>
+            <form name = "test_info" hx-post = "/" hx-target = "#test-results-panel" hx-swap = "innerHtml">
+                <div class="inputArea">
+                    <label for="target">Target <input type="text" name="target" id="target"></label>
+                </div>
+                
+                <div class="inputArea">
+                    <label for="method">Method 
+                        <select name="method" id="method">
+                            <option value="default">---Select an Option---</option>
+                            <option value="get">GET Request</option>
+                            <option value="post">POST Request</option>
+                            <option value="icmp">ICMP Request</option>
+                        </select>
+                    </label>
+                </div>
 
-                <label for="method">Method 
-                    <select name="method" id="method">
-                        <option value="default">---Select an Option---</option>
-                        <option value="get">GET Request</option>
-                        <option value="post">POST Request</option>
-                        <option value="icmp">ICMP Request</option>
-                    </select>
-                </label> <br>
+                <div class="inputArea">
+                    <label for="numRequests">Number of Requests <input type="number" name="numRequests" id="numRequests"></label>
+                </div>
+
+                
                 <center><button type="submit">Launch the Test</button></center>
             </form>
         </div>

@@ -1,18 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-
-	"github.com/charmbracelet/lipgloss"
+	"text/template"
 )
-
-// Lipgloss styles
-var errorStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF6961"))
-var successStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#77DD77"))
 
 // Server Setup Stuff
 var serverPort string = ":8080"
+
+// Struct for rendering the report template
+type ReportStatistics struct {
+	RequestsSent    int
+	RequestsBlocked int
+}
 
 func main() {
 	// Serve static files
@@ -21,12 +21,7 @@ func main() {
 
 	http.HandleFunc("/", getPage)
 
-	err := http.ListenAndServe(serverPort, nil)
-	if err != nil {
-		fmt.Println(errorStyle.Render("Error") + " Could Not Start Server")
-	} else {
-		fmt.Println(successStyle.Render("Success") + " Server has started and is running on localhost:" + serverPort)
-	}
+	http.ListenAndServe(serverPort, nil)
 }
 
 func getPage(w http.ResponseWriter, r *http.Request) {
@@ -35,14 +30,17 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	if method == "GET" {
 		http.ServeFile(w, r, "webFiles/index.html")
 	} else if method == "POST" {
-		//Run the Test
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		fmt.Fprint(w, "<h1>Chicken Nuggets</h1>")
+		//Get the template file ready
+		t, _ := template.ParseFiles("webFiles/templates/reportsStatsPage.html")
+
+		//TODO Run the test
+
+		//Fill the data in
+		stats := ReportStatistics{100, 50}
+
+		// Run the template
+		t.Execute(w, stats)
 	} else {
 		http.Error(w, "Error: Invalid Request", http.StatusBadRequest)
 	}
-}
-
-func launchTest(writer http.ResponseWriter, request *http.Request) bool {
-
 }
