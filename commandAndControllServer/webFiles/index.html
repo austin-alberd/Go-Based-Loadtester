@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/style.css">
+    <!--<link rel="stylesheet" href="../staticFiles/style.css">-->
     <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
     <title>Command and Control Server</title>
 </head>
@@ -16,22 +17,23 @@
             <center><h3>Lets Get Testing!</h3></center>
             <form name = "test_info" hx-post = "/" hx-target = "#test-results-panel" hx-swap = "innerHtml">
                 <div class="inputArea">
-                    <label for="target">Target <input type="text" name="target" id="target"></label>
+                    <label for="target">Target</label> 
+                    <input type="text" name="target" id="target">
                 </div>
                 
                 <div class="inputArea">
-                    <label for="method">Method 
-                        <select name="method" id="method">
-                            <option value="default">---Select an Option---</option>
-                            <option value="get">GET Request</option>
-                            <option value="post">POST Request</option>
-                            <option value="icmp">ICMP Request</option>
-                        </select>
-                    </label>
+                    <label for="method">Method</label> 
+                    <select name="method" id="method">
+                        <option value="default">---Select an Option---</option>
+                        <option value="get">GET Request</option>
+                        <option value="post">POST Request</option>
+                        <option value="icmp">ICMP Request</option>
+                    </select>
                 </div>
 
                 <div class="inputArea">
-                    <label for="numRequests">Number of Requests <input type="number" name="numRequests" id="numRequests"></label>
+                    <label for="numRequests">Number of Requests</label> 
+                    <input type="number" name="numRequests" id="numRequests">
                 </div>
 
                 
