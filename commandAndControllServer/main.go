@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -67,7 +69,7 @@ func indexRoute(w http.ResponseWriter, r *http.Request) {
 		testVals := TestData{r.FormValue("target"), r.FormValue("method"), numRequests}
 
 		//Start the test
-		runTest(testVals)
+		sendTestRequest(testVals)
 
 	} else {
 		http.Error(w, "Error: Invalid Request", http.StatusBadRequest)
@@ -86,10 +88,11 @@ func dataReturn(w http.ResponseWriter, r *http.Request) {
 		if testIsFinished {
 			fmt.Println("Test is done austin's lazy ass should render the template")
 		} else {
-			fmt.Println("Not done yet good things come to those who wait")
+			//fmt.Println("Not done yet good things come to those who wait")
+			//TODO Do some user output stuff?
 		}
 	} else if method == "POST" {
-		//TODO Implement data handling
+		fmt.Println(droppedConnections, wentThroughConnections)
 	}
 }
 
@@ -99,7 +102,7 @@ func dataReturn(w http.ResponseWriter, r *http.Request) {
 * Function:   runTest()
 *  Purpose:   Sends the request to the agent servers to start the tests
  */
-func runTest(data TestData) bool {
+func sendTestRequest(data TestData) bool {
 
 	//Print a little debugging stuff
 	fmt.Println(successStyle.Render("Test Data Received: "), "Target: ", data.Target, " | ", "Method: ", data.Method, " | ", "NumRequests: ", data.NumRequests)
@@ -111,7 +114,24 @@ func runTest(data TestData) bool {
 	//send the requests to the agentServers
 
 	for index := range serverList {
-		fmt.Println(successStyle.Render("Success: "), "Sent start request to agent server: ", serverList[index])
+		currServer := "http://127.0.0.1:80/" //serverList[index]
+		fmt.Println(index)
+		//Make the struct into a JSON object
+		jsonData, _ := json.Marshal(data)
+
+		//Construct the request
+		req, _ := http.NewRequest("POST", currServer, bytes.NewBuffer((jsonData)))
+		req.Header.Set("Content-Type", "application/json")
+
+		//Send it out
+		client := &http.Client{}
+		_, err := client.Do(req)
+		if err != nil {
+			fmt.Println(errorStyle.Render("Error "), "Could not send request to ", currServer, "\n", err)
+		} else {
+			fmt.Println(successStyle.Render("Success: "), "Sent start request to agent server: ", currServer)
+		}
+
 	}
 	return true
 }
