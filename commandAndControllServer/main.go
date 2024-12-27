@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"text/template"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/joho/godotenv"
@@ -17,7 +16,7 @@ var successStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#77
 var errorStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF6961"))
 
 // Server Setup Stuff
-var serverPort string = ":8080"
+var serverAddress string
 
 // Struct for rendering the report template
 type ReportStatistics struct {
@@ -33,75 +32,102 @@ type TestData struct {
 }
 
 func main() {
+	//Load the environment variables.
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	//Get the server address from the environment variables
+	serverAddress = getEnvironmentVariable("webServerAddressCaC")
+
 	// Serve static files
 	fs := http.FileServer(http.Dir("staticFiles/"))
 	http.Handle("/static/", http.StripPrefix("/static", fs))
 
-	http.HandleFunc("/", getPage)
-	http.HandleFunc("/testData", testData)
+	//Serve the pages
+	http.HandleFunc("/", indexRoute)
+	http.HandleFunc("/testData", dataReturn)
 
-	http.ListenAndServe(serverPort, nil)
+	//Start the server
+	http.ListenAndServe(serverAddress, nil)
 }
 
 // HTTP Routes
-func getPage(w http.ResponseWriter, r *http.Request) {
+func indexRoute(w http.ResponseWriter, r *http.Request) {
 	method := r.Method
 
 	if method == "GET" {
 		http.ServeFile(w, r, "webFiles/index.html")
 	} else if method == "POST" {
-		//Get the template file ready
-		t, _ := template.ParseFiles("webFiles/templates/reportsStatsPage.html")
 
 		//Get the data from the form and put it into the struct
 		numRequestsSTR := r.FormValue("numRequests")
 		numRequests, _ := strconv.Atoi(numRequestsSTR)
 		testVals := TestData{r.FormValue("target"), r.FormValue("method"), numRequests}
 
+		//Start the test
 		runTest(testVals)
 
-		stats := ReportStatistics{100, 50}
-
-		// Run the template
-		t.Execute(w, stats)
 	} else {
 		http.Error(w, "Error: Invalid Request", http.StatusBadRequest)
 	}
 }
 
-func testData(w http.ResponseWriter, r *http.Request) {
+func dataReturn(w http.ResponseWriter, r *http.Request) {
 	method := r.Method
+	testIsFinished := false
+
+	//Data for rendering the template
+	droppedConnections := 0
+	wentThroughConnections := 0
 
 	if method == "GET" {
-		http.Error(w, "Error: Invalid Request", http.StatusBadRequest)
+		if testIsFinished {
+			fmt.Println("Test is done austin's lazy ass should render the template")
+		} else {
+			fmt.Println("Not done yet good things come to those who wait")
+		}
 	} else if method == "POST" {
 		//TODO Implement data handling
 	}
 }
 
 // Utility Functions
+
+/*
+* Function:   runTest()
+*  Purpose:   Sends the request to the agent servers to start the tests
+ */
 func runTest(data TestData) bool {
+
+	//Print a little debugging stuff
 	fmt.Println(successStyle.Render("Test Data Received: "), "Target: ", data.Target, " | ", "Method: ", data.Method, " | ", "NumRequests: ", data.NumRequests)
 
-	//Load the servers from the environmentVariable
-	err := godotenv.Load()
-	if err != nil {
-		//If there is an error with loading the .env file check if the SERVERS environment variable exists
-		_, exists := os.LookupEnv("SERVERS")
-		if !exists {
-			fmt.Println(errorStyle.Render("Error: "), "Could not find SERVERS environment variable.")
-			return false
-		}
-	} else {
-		fmt.Println(successStyle.Render("Success: "), "Servers environment variable loaded")
-	}
 	//make the list of servers
-	serverList := strings.Split(os.Getenv("SERVERS"), ",")
-	
+	serverVar := getEnvironmentVariable("SERVERS")
+	serverList := strings.Split(serverVar, ",")
+
 	//send the requests to the agentServers
 
-	for index := range serverList{
+	for index := range serverList {
 		fmt.Println(successStyle.Render("Success: "), "Sent start request to agent server: ", serverList[index])
 	}
 	return true
+}
+
+/*
+* Function:   getEnvironmentVariable
+*  Purpose:   Get an environment variable
+ */
+func getEnvironmentVariable(varName string) string {
+	_, exists := os.LookupEnv(varName)
+
+	if exists {
+		fmt.Println(successStyle.Render("Success "), varName, " has been successfully retrieved")
+		return os.Getenv(varName)
+	} else {
+		fmt.Println(errorStyle.Render("Error ", varName, " could not be retrieved"))
+		return ":("
+	}
 }

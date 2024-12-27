@@ -20,13 +20,13 @@
     <main>
         <div id="test-start-panel">
             <center><h3>Lets Get Testing!</h3></center>
-            <form name = "test_info" hx-post = "/" hx-target = "#test-results-panel" hx-swap = "innerHtml">
+            <form name = "test_info" hx-post = "/" hx-swap="none">
                 <div class="inputArea">
                     <label for="target">Target</label> 
                     <input type="text" name="target" id="target">
                 </div>
                 
-                <div class="inputArea">
+                <div class="inputArea" >
                     <label for="method">Method</label> 
                     <select name="method" id="method">
                         <option value="default">---Select an Option---</option>
@@ -46,7 +46,7 @@
             </form>
         </div>
 
-        <div id="test-results-panel">
+        <div id="test-results-panel"  hx-get="/testData" hx-trigger="every 2s">
             <center><h3>Test Results</h3></center>
             <div id="#inner-results">
 
