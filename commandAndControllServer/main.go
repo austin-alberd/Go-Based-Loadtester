@@ -28,9 +28,9 @@ type ReportStatistics struct {
 
 // Struct for the test data
 type TestData struct {
-	Target      string //What IP / Domain Name to target for the test
-	Method      string //What method to send
-	NumRequests int    //How many requests to send
+	Target      string `json:"target"`//What IP / Domain Name to target for the test
+	Method      string `json:"method"`//What method to send
+	NumRequests int    `json:"numRequests"`//How many requests to send
 }
 
 func main() {
