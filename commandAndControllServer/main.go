@@ -4,21 +4,23 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"text/template"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/joho/godotenv"
+	"github.com/charmbracelet/lipgloss" // Makes the terminal look pretty
+	"github.com/joho/godotenv"          // Environment Variables in Go
 )
 
 // lipgloss styles
 var successStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#77DD77"))
 var errorStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF6961"))
 
-// Server Setup Stuff
-var serverAddress string
+// Global Vars
+var serverAddress string // Server address
 
 // Struct for rendering the report template
 type ReportStatistics struct {
@@ -28,9 +30,16 @@ type ReportStatistics struct {
 
 // Struct for the test data
 type TestData struct {
-	Target      string `json:"target"`//What IP / Domain Name to target for the test
-	Method      string `json:"method"`//What method to send
-	NumRequests int    `json:"numRequests"`//How many requests to send
+	Target      string `json:"target"`      //What IP / Domain Name to target for the test
+	Method      string `json:"method"`      //What method to send
+	NumRequests int    `json:"numRequests"` //How many requests to send
+}
+
+// Struct to handle the data returned by the test
+type TestDataReturn struct {
+	Accepted int32 `json:"acceptedConnections"` //Connections that went through
+	Dropped  int32 `json:"droppedConnections"`  //Connections that did not go through
+
 }
 
 func main() {
@@ -77,22 +86,22 @@ func indexRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func dataReturn(w http.ResponseWriter, r *http.Request) {
-	method := r.Method
-	testIsFinished := false
+	var data TestDataReturn //Struct to hold all of the data returned by the remote server
+	reportData := ReportStatistics{0, 0}
 
-	//Data for rendering the template
-	droppedConnections := 0
-	wentThroughConnections := 0
+	if r.Method == "GET" {
+		t, _ := template.ParseFiles("webFiles/templates/reportsStatsPage.html")
+		t.Execute(w, reportData)
 
-	if method == "GET" {
-		if testIsFinished {
-			fmt.Println("Test is done austin's lazy ass should render the template")
-		} else {
-			//fmt.Println("Not done yet good things come to those who wait")
-			//TODO Do some user output stuff?
-		}
-	} else if method == "POST" {
-		fmt.Println(droppedConnections, wentThroughConnections)
+	} else if r.Method == "POST" {
+
+		//Unmarshal the data
+		body, _ := io.ReadAll(r.Body)
+		json.Unmarshal(body, &data)
+
+		fmt.Println(successStyle.Render("Success"), " Data received from the remote server", data.Accepted, " | ", data.Dropped)
+		reportData.RequestsBlocked += int(data.Dropped)
+		reportData.RequestsSent += int(data.Accepted)
 	}
 }
 
@@ -102,7 +111,7 @@ func dataReturn(w http.ResponseWriter, r *http.Request) {
 * Function:   runTest()
 *  Purpose:   Sends the request to the agent servers to start the tests
  */
-func sendTestRequest(data TestData) bool {
+func sendTestRequest(data TestData) {
 
 	//Print a little debugging stuff
 	fmt.Println(successStyle.Render("Test Data Received: "), "Target: ", data.Target, " | ", "Method: ", data.Method, " | ", "NumRequests: ", data.NumRequests)
@@ -114,9 +123,9 @@ func sendTestRequest(data TestData) bool {
 	//send the requests to the agentServers
 
 	for index := range serverList {
-		currServer := "http://127.0.0.1:80/" //serverList[index]
-		fmt.Println(index)
-		//Make the struct into a JSON object
+		currServer := serverList[index]
+
+		//Make the test data into a JSON object to be sent to the agent Server
 		jsonData, _ := json.Marshal(data)
 
 		//Construct the request
@@ -133,7 +142,6 @@ func sendTestRequest(data TestData) bool {
 		}
 
 	}
-	return true
 }
 
 /*

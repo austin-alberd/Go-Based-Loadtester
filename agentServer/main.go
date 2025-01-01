@@ -1,9 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -16,6 +17,12 @@ type TestData struct {
 	Target      string `json:"target"`      //What IP / Domain Name to target for the test
 	Method      string `json:"method"`      //What method to send
 	NumRequests int    `json:"numRequests"` //How many requests to send
+}
+
+type TestDataReturn struct {
+	Accepted int32 `json:"acceptedConnections"` //Connections that went through
+	Dropped  int32 `json:"droppedConnections"`  //Connections that did not go through
+
 }
 
 // lipgloss styles
@@ -50,16 +57,34 @@ func main() {
 func processTestRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		var data TestData // Struct to hold requested data
-		
+
 		// Read the JSON data from the request body and store it in the struct
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		err := json.Unmarshal(body, &data)
 		if err != nil {
 			fmt.Println(errorStyle.Render("Error "), "Unable to unmarshal JSON data from test request!", "\n", err)
 		} else {
 			fmt.Println(successStyle.Render("Success "), "Data received from command and control server.")
 			fmt.Println("Target: ", data.Target, " | ", "Method: ", data.Method, " | ", "Number of Requests ", data.NumRequests)
-			fmt.Println("Starting Test ......")
+
+			testResults := runTest(data)
+			fmt.Println(successStyle.Render("Success "), "Test Completed Succesfuly")
+			fmt.Println("Accepted Connections: ", testResults[0], " | ", "Dropped Connections: ", testResults[1])
+
+			testResultsToSend := TestDataReturn{testResults[0], testResults[1]}
+
+			//Make the struct into a JSON object
+			jsonData, _ := json.Marshal(testResultsToSend)
+
+			//Construct the request
+			req, _ := http.NewRequest("POST", commandAndControlAddress, bytes.NewBuffer((jsonData)))
+			req.Header.Set("Content-Type", "application/json")
+
+			//Send it out
+			client := &http.Client{}
+			client.Do(req)
+
+			fmt.Println(successStyle.Render("Success"), "Sent data to server", commandAndControlAddress)
 		}
 
 	} else {
@@ -82,4 +107,26 @@ func getEnvironmentVariable(varName string) string {
 		fmt.Println(errorStyle.Render("Error ", varName, " could not be retrieved"))
 		return ":("
 	}
+}
+
+func runTest(data TestData) [2]int32 {
+	fmt.Println("Starting Test ......")
+	var testResults [2]int32
+	acceptedConnections := 0
+	droppedConnections := 0
+
+	for i := 0; i < data.NumRequests; i++ {
+		resp, _ := http.Get(data.Target)
+		fmt.Println("Sent Request")
+		if resp.StatusCode != http.StatusOK {
+			droppedConnections += 1
+		} else {
+			acceptedConnections += 1
+		}
+	}
+
+	testResults[0] = int32(acceptedConnections)
+	testResults[1] = int32(droppedConnections)
+
+	return testResults
 }
