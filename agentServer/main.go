@@ -68,7 +68,7 @@ func processTestRequest(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Target: ", data.Target, " | ", "Method: ", data.Method, " | ", "Number of Requests ", data.NumRequests)
 
 			testResults := runTest(data)
-			fmt.Println(successStyle.Render("Success "), "Test Completed Succesfuly")
+			fmt.Println(successStyle.Render("Success "), "Test Completed Successfully")
 			fmt.Println("Accepted Connections: ", testResults[0], " | ", "Dropped Connections: ", testResults[1])
 
 			testResultsToSend := TestDataReturn{testResults[0], testResults[1]}
@@ -82,7 +82,10 @@ func processTestRequest(w http.ResponseWriter, r *http.Request) {
 
 			//Send it out
 			client := &http.Client{}
-			client.Do(req)
+			_, err := client.Do(req)
+			if err != nil {
+				fmt.Println(errorStyle.Render("Error "), "Could not send request")
+			}
 
 			fmt.Println(successStyle.Render("Success"), "Sent data to server", commandAndControlAddress)
 		}
@@ -116,8 +119,10 @@ func runTest(data TestData) [2]int32 {
 	droppedConnections := 0
 
 	for i := 0; i < data.NumRequests; i++ {
-		resp, _ := http.Get(data.Target)
-		fmt.Println("Sent Request")
+		resp, err := http.Get(data.Target)
+		if err != nil {
+			fmt.Println(errorStyle.Render("Error "), "Could not send request")
+		}
 		if resp.StatusCode != http.StatusOK {
 			droppedConnections += 1
 		} else {

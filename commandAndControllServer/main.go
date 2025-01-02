@@ -20,7 +20,11 @@ var successStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#77
 var errorStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF6961"))
 
 // Global Vars
-var serverAddress string // Server address
+var serverAddress string        // Server address
+var reportData ReportStatistics // Report data for rendering the template
+
+var totalServers int
+var testDataReceived int
 
 // Struct for rendering the report template
 type ReportStatistics struct {
@@ -87,11 +91,12 @@ func indexRoute(w http.ResponseWriter, r *http.Request) {
 
 func dataReturn(w http.ResponseWriter, r *http.Request) {
 	var data TestDataReturn //Struct to hold all of the data returned by the remote server
-	reportData := ReportStatistics{0, 0}
 
 	if r.Method == "GET" {
-		t, _ := template.ParseFiles("webFiles/templates/reportsStatsPage.html")
-		t.Execute(w, reportData)
+		if totalServers == testDataReceived && testDataReceived != 0 {
+			t, _ := template.ParseFiles("webFiles/templates/reportsStatsPage.html")
+			t.Execute(w, reportData)
+		}
 
 	} else if r.Method == "POST" {
 
@@ -102,6 +107,8 @@ func dataReturn(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(successStyle.Render("Success"), " Data received from the remote server", data.Accepted, " | ", data.Dropped)
 		reportData.RequestsBlocked += int(data.Dropped)
 		reportData.RequestsSent += int(data.Accepted)
+
+		testDataReceived += 1
 	}
 }
 
@@ -112,6 +119,10 @@ func dataReturn(w http.ResponseWriter, r *http.Request) {
 *  Purpose:   Sends the request to the agent servers to start the tests
  */
 func sendTestRequest(data TestData) {
+	//Reset the variables
+	reportData = ReportStatistics{0, 0}
+	testDataReceived = 0
+	totalServers = 0
 
 	//Print a little debugging stuff
 	fmt.Println(successStyle.Render("Test Data Received: "), "Target: ", data.Target, " | ", "Method: ", data.Method, " | ", "NumRequests: ", data.NumRequests)
@@ -124,6 +135,7 @@ func sendTestRequest(data TestData) {
 
 	for index := range serverList {
 		currServer := serverList[index]
+		totalServers += 1
 
 		//Make the test data into a JSON object to be sent to the agent Server
 		jsonData, _ := json.Marshal(data)
