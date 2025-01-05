@@ -58,3 +58,10 @@ button{
 button:hover, button:focus{
     background-color:var(--accent-color-three);
 }
+
+#instruction-footer{
+    border: 1px solid white;
+    width:98%;
+    margin: 1%;
+    background-color: var(--background-color);
+}
