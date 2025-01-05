@@ -1,14 +1,25 @@
-# Go-Loadtest-Me
-A load testing service that is written in Go. 
+<h1><center>Go Load Tester</center></h1>
+<center>A simple HTTP load tester written in go.</center>
 
-## Technical Description
-This is a load testing service that is written in Go. A command server will controll several "agent" servers. These servers will recieve and send requests to to command and controll server to recieve instructions and return data.
+## How this system works
+This system works via two parts, the agent server and the command and control server. <br>
+The agent server handles sending the requests and compiling the results. <br>
+The command and control server handles sending the start request to the agent servers, displaying information, and starting / setting up the test.
 
-The command and controll server will have a list of targets, request that need to be sent, and "agent" servers.
+## Using this System
+1. Download all project files from Github
+2. Set up the .env files in each file folder (agentServer and commandAndControlServer). (see .env files section)
+3. Run the go files in each of the folders
 
-![Image of the system diagram.](systemDiagram.png)
+## Setting up the .env files
+* Command and Control Server .env File
+    1. SERVERS - A list of agent servers. Must be in the format of http(s)://address/. For multiple servers separate the addresses with commas.
+    2. webServerAddressCaC - The address of the command and control server
+* Agent Server .env File
+    1. webServerAddressAgent - The address of the agent server
+    2. commandAndControlServerAddress - The address of the command and control server. FILL IN THE yourdomain PART ONLY
 
-## How to use
+## System Diagrams
 
-## <em>Disclaimer</em>
-This system is intended to be a load testing system for web based services. Do not run on any hardware that is not yours or that you do not have the consent to opperate on.
+![](DataExchangeDiagram.png)
+
