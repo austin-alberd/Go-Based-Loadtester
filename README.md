@@ -1,5 +1,7 @@
 <h1><center>Go Load Tester</center></h1>
+
 ![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
+
 <center>A simple HTTP load tester written in go.</center>
 
 ## How this system works
